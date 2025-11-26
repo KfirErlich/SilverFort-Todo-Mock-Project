@@ -1,14 +1,16 @@
-import {useReducer, useEffect, useState, useMemo} from 'react';
+import { useReducer, useEffect, useState, useMemo } from 'react';
 import type { Todo, FilterType } from "./interfaces/Todo";
-import TodoList from "./components/TodoList"
+import TodoList from "./components/TodoList";
 import AddTodo from './components/AddTodo';
 import { todosReducer, initialTodos } from './hooks/todosReducer';
 import FilterTodo from './components/FilterTodo';
 import { getTodos, updateTodoCompletion, deleteTodo } from './services/todoApi';
+import HomePage from './components/pages/HomePage';
 
 function App() {
   const [todos, dispatch] = useReducer(todosReducer, initialTodos);
   const [filter, setFilter] = useState<FilterType>('ALL');
+  const [hasStarted, setHasStarted] = useState(false);
 
   const handleDeleteTodo = async (id: string) => {
     const result = await deleteTodo(id);
@@ -53,6 +55,8 @@ function App() {
   }, [todos, filter]);
     
   useEffect(() => {
+    if (!hasStarted) return;
+
     const getToDoList = async () => {
       const result = await getTodos();
       if (result.success) {
@@ -64,8 +68,12 @@ function App() {
     };
 
     getToDoList();
-  }, []);
+  }, [hasStarted]);
 
+
+  if (!hasStarted) {
+    return <HomePage onStart={() => setHasStarted(true)} />;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">

@@ -1,9 +1,14 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import todoRoutes from './routes/todoRoutes';
+import dotenv from 'dotenv'
+import {connectDB} from './db/connection'
 
 const PORT = 3000;
 const app = express();
+
+dotenv.config();
+connectDB();
 
 app.use(cors());
 app.use(express.json());
