@@ -1,22 +1,26 @@
 import { useState, type FormEvent } from "react";
-import type { AddTodoProps, Todo } from "../interfaces/Todo";
+import type { AddTodoProps } from "../interfaces/Todo";
+import { addTodo } from "../services/todoApi";
 
 export default function AddTodo({handleAddTodo}: AddTodoProps) {
   const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!description.trim()) return;
 
-    const newTodo: Todo = {
-      id: crypto.randomUUID(),
-      description: description.trim(),
-      isCompleted: false,
-      createdAt: new Date(),
-    };
+    setIsLoading(true);
+    const result = await addTodo(description.trim(), false);
+    setIsLoading(false);
 
-    handleAddTodo(newTodo);
-    setDescription("");
+    if (result.success) {
+      handleAddTodo(result.data);
+      setDescription("");
+    } else {
+      console.error('Failed to add todo:', result.error);
+      // You could add user-facing error handling here (toast, alert, etc.)
+    }
   };
 
   return (
@@ -33,9 +37,10 @@ export default function AddTodo({handleAddTodo}: AddTodoProps) {
       />
       <button
         type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition-colors"
+        disabled={isLoading}
+        className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Add
+        {isLoading ? 'Adding...' : 'Add'}
       </button>
     </form>
   );
